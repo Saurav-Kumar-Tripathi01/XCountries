@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 function CountryCard({ flagUrl, name }) {
     return (
         <div
-            className="countryCard" // Added class for Cypress tests
+            className="countryCard"
             style={{
                 display: "flex",
                 flexDirection: "column",
@@ -36,19 +36,22 @@ const Countries = () => {
     const API_url = "https://xcountriesapi.onrender.com/all";
     const [countries, setCountries] = useState([]);
     const [search, setSearch] = useState("");
-    const [loading, setLoading] = useState(true); // Loading state for data fetching
+    const [loading, setLoading] = useState(true);
 
     // Fetch countries data
     useEffect(() => {
         fetch(API_url)
             .then((response) => response.json())
             .then((data) => {
-                setCountries(data.data || []); // Use API's "data" key
-                setLoading(false); // Stop loading once data is fetched
+                const uniqueCountries = Array.from(
+                    new Set(data.data.map((country) => country.name))
+                ).map((name) => data.data.find((country) => country.name === name));
+                setCountries(uniqueCountries || []);
+                setLoading(false);
             })
             .catch((error) => {
                 console.error("Error fetching data: " + error);
-                setLoading(false); // Stop loading on error
+                setLoading(false);
             });
     }, []);
 
@@ -87,11 +90,11 @@ const Countries = () => {
                     }}
                 >
                     {/* Render Country Cards */}
-                    {filteredCountries.map((country) => (
+                    {filteredCountries.map((country, index) => (
                         <CountryCard
                             name={country.name}
                             flagUrl={country.flag}
-                            key={country.abbr}
+                            key={`${country.abbr}-${index}`} // Unique key using country.abbr and index
                         />
                     ))}
                 </div>
